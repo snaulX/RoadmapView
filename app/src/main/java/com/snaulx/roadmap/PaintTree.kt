@@ -29,22 +29,13 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
     // !!! YOU CAN OPTIMISE IT !!!
     // You can cache all calculations
     fun paint(canvas: Canvas) {
-        for (i in tree.body.indices) {
-            val node = tree.body[i]
-            val branchPaint = PaintBranch(node.branches.first(), branchStyles)
+        val paintLine = Paint() // it should be as private member of class
+        paintLine.color = Color.rgb(250, 174, 53)
+        paintLine.strokeWidth = 7F
+        for (node in tree.body) {
 
-            textPaint.textSize = nodeStyle.fontSize
-
-            val h = nodePadding+nodeHeight
-            val w = (canvas.width-nodeStyle.width)/2
-            val rect = RectF(w, basePadding, w+nodeStyle.width, basePadding+nodeHeight)
-            for (value in node.values) {
-                canvas.drawRoundRect(rect, nodeStyle.rx, nodeStyle.ry, nodePaint)
-                canvas.drawCenterText(value, rect, textPaint)
-                rect.bottom += h
-                rect.top += h
-            }
-            canvas.drawBezier(PointF(0F, 0F), PointF(rect.left, rect.top), Color.BLUE, 10F)
+            val rect = paintNode(canvas, node)
+            canvas.drawLine(rect.centerX(), lastHeight, rect.centerX(), lastHeight+basePadding, paintLine)
 
             val brPadding = style.nodeStyle.branchPadding
             var branchLeft = true
@@ -67,17 +58,41 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
                 for (value in branch.values) {
                     canvas.drawRoundRect(rect, brStyle.rx, brStyle.ry, branchPainting)
                     canvas.drawCenterText(value, rect, textPaint)
-                    rect.bottom += h
-                    rect.top += h
+                    rect.bottom += brHeight
+                    rect.top += brHeight
                 }
 
                 //if (branch.hasChildren) branchLeft = !branchLeft
+                branchLeft = !branchLeft
             }
         }
     }
-}
 
-data class PaintNode(val node: TreeNode<String>, var style: NodeStyle)
+    var lastHeight = 0F
+
+    fun paintNode(canvas: Canvas, node: TreeNode<String>): RectF {
+        textPaint.textSize = nodeStyle.fontSize
+        val h = nodePadding+nodeHeight
+        val w = (canvas.width-nodeStyle.width)/2
+        val startHeight = lastHeight+basePadding
+        val rect = RectF(w, startHeight, w+nodeStyle.width, startHeight+nodeHeight)
+        for (value in node.values) {
+            canvas.drawRoundRect(rect, nodeStyle.rx, nodeStyle.ry, nodePaint)
+            canvas.drawCenterText(value, rect, textPaint)
+            rect.bottom += h
+            rect.top += h
+        }
+        lastHeight = rect.top
+        rect.top = startHeight
+        rect.bottom = lastHeight
+        return rect
+    }
+    fun paintBranch(canvas: Canvas): RectF {
+        val rect = RectF()
+        
+        return rect
+    }
+}
 
 data class PaintBranch(val branch: TreeBranch<String>, val styles: List<BranchStyle> = listOf()) {
     val width: Float = calcMaxWidth()

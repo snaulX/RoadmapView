@@ -7,16 +7,23 @@ import android.os.Bundle
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val rectStyle = RectStyle(Color.RED, 50F, 300F, 100F, 10F, 20F)
+        val rectStyle = RectStyle(Color.RED, 30F, 300F, 100F, 10F, 20F)
         val roadmap = tree<String> {
-            node("I am main node", "Also value") {
-                branch("Im branch") {
-                    branch("Child 1")
-                    branch("Child", "2")
+            node("Pick a language") {
+                branch("Kotlin")
+                branch("Java")
+            }
+            node("Fundamentals")/* {
+                branch("Install Android Studio")
+                branch("Learn Language") {
+                    branch("Learn Basics of Language", "Learn OOP")
                 }
             }
-        }.paintTree(30F, Color.BLACK, NodeStyle(10F,
-            rectStyle, 20F), BranchStyle(10F, rectStyle, 30F))
+            node("Version Control Systems", "Repo Hosting Services")*/
+        }.paintTree(30F, Color.BLACK,
+            NodeStyle(10F, rectStyle, 20F),
+            BranchStyle(10F, rectStyle, 30F),
+            BranchStyle(5F, rectStyle, 10F))
         //setContentView(R.layout.activity_main)
         setContentView(RoadmapView(this, roadmap))
     }
