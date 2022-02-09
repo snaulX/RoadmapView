@@ -1,11 +1,50 @@
 package com.snaulx.roadmap
 
 import android.graphics.*
-import android.text.TextPaint
 import androidx.annotation.ColorInt
-import androidx.core.graphics.toRect
 
 data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
+
+    data class PaintBranch(val style: BranchStyle, @ColorInt val textColor: Int,
+                           val offset: RectF, val branches: List<List<String>>) {
+        private val paint = Paint()
+        private val textPaint = Paint()
+        private val rects: List<List<RectF>>
+
+        init {
+            paint.style = Paint.Style.FILL
+            paint.color = style.style.color
+            textPaint.textSize = style.style.fontSize
+            textPaint.color = textColor
+
+            val rectStyle: RectStyle = style.style
+            val mutRects = mutableListOf<List<RectF>>()
+            var left = true
+            val rect = RectF(0F, 0F, rectStyle.height, rectStyle.width)
+            for (branch in branches) {
+                val branchList = mutableListOf<RectF>()
+                for (i in branch.indices) {
+                    rect downOn rectStyle.height
+
+                }
+                mutRects.add(branchList.toList())
+                left = !left
+            }
+            rects = mutRects.toList()
+        }
+
+        fun paint(canvas: Canvas): List<List<PointF>> {
+            val points = mutableListOf<List<PointF>>()
+            var left = true
+            for (branch in branches) {
+                val branchList = mutableListOf<PointF>()
+
+                points.add(branchList.toList())
+                left = !left
+            }
+            return points.toList()
+        }
+    }
 
     private val basePadding = style.padding
 
@@ -28,6 +67,7 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
 
     // !!! YOU CAN OPTIMISE IT !!!
     // You can cache all calculations
+    // Like in PaintBranch class
     fun paint(canvas: Canvas) {
         val paintLine = Paint() // it should be as private member of class
         paintLine.color = Color.rgb(250, 174, 53)
@@ -58,8 +98,7 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
                 for (value in branch.values) {
                     canvas.drawRoundRect(rect, brStyle.rx, brStyle.ry, branchPainting)
                     canvas.drawCenterText(value, rect, textPaint)
-                    rect.bottom += brHeight
-                    rect.top += brHeight
+                    rect downOn brHeight
                 }
 
                 //if (branch.hasChildren) branchLeft = !branchLeft
@@ -79,18 +118,34 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
         for (value in node.values) {
             canvas.drawRoundRect(rect, nodeStyle.rx, nodeStyle.ry, nodePaint)
             canvas.drawCenterText(value, rect, textPaint)
-            rect.bottom += h
-            rect.top += h
+            rect downOn h
         }
         lastHeight = rect.top
         rect.top = startHeight
         rect.bottom = lastHeight
         return rect
     }
-    fun paintBranch(canvas: Canvas): RectF {
+    fun paintMainBranch(canvas: Canvas, nodeRect: RectF): RectF {
         val rect = RectF()
-        
+
         return rect
+    }
+    fun paintBranch(canvas: Canvas, index: Int = 0): RectF {
+        val rect = RectF()
+        val style: BranchStyle = branchStyles[index]
+
+        return rect
+    }
+
+    /*
+    Create new rect from maximum width and height of both rects
+     */
+    private fun maxCombineRect(a: RectF, b: RectF): RectF {
+        val top: Float = if (a.top > b.top) a.top else b.top
+        val bottom: Float = if (a.bottom > b.bottom) a.bottom else b.bottom
+        val right: Float = if (a.right > b.right) a.right else b.right
+        val left: Float = if (a.left > b.left) a.left else b.left
+        return RectF(left, top, right, bottom)
     }
 }
 
