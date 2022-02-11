@@ -2,6 +2,7 @@ package com.snaulx.roadmap
 
 import android.graphics.*
 import androidx.annotation.ColorInt
+import kotlin.math.max
 
 data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
 
@@ -11,38 +12,45 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
         private val textPaint = Paint()
         private val rects: List<List<RectF>>
 
+        private val rx: Float
+        private val ry: Float
+
         init {
             paint.style = Paint.Style.FILL
             paint.color = style.style.color
             textPaint.textSize = style.style.fontSize
             textPaint.color = textColor
-
             val rectStyle: RectStyle = style.style
+            rx = rectStyle.rx
+            ry = rectStyle.ry
+
+            val valHeight: Float = rectStyle.height + style.valuesPadding
             val mutRects = mutableListOf<List<RectF>>()
             var left = true
             val rect = RectF(0F, 0F, rectStyle.height, rectStyle.width)
             for (branch in branches) {
                 val branchList = mutableListOf<RectF>()
                 for (i in branch.indices) {
-                    rect downOn rectStyle.height
-
+                    branchList.add(rect)
+                    rect downOn valHeight
                 }
                 mutRects.add(branchList.toList())
+                rect downOn style.childrenPadding - style.valuesPadding
                 left = !left
             }
             rects = mutRects.toList()
         }
 
-        fun paint(canvas: Canvas): List<List<PointF>> {
-            val points = mutableListOf<List<PointF>>()
-            var left = true
-            for (branch in branches) {
-                val branchList = mutableListOf<PointF>()
-
-                points.add(branchList.toList())
-                left = !left
+        fun paint(canvas: Canvas) {
+            for (i in branches.indices) {
+                val values: List<String> = branches[i]
+                val valRects: List<RectF> = rects[i]
+                for (j in values.indices) {
+                    val rect = valRects[j]
+                    canvas.drawRoundRect(rect, rx, ry, paint)
+                    canvas.drawCenterText(values[j], rect, textPaint)
+                }
             }
-            return points.toList()
         }
     }
 
@@ -66,7 +74,7 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
     }
 
     // !!! YOU CAN OPTIMISE IT !!!
-    // You can cache all calculations
+    // You can calculate all in constructor and cache it
     // Like in PaintBranch class
     fun paint(canvas: Canvas) {
         val paintLine = Paint() // it should be as private member of class
@@ -109,7 +117,7 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
 
     var lastHeight = 0F
 
-    fun paintNode(canvas: Canvas, node: TreeNode<String>): RectF {
+    private fun paintNode(canvas: Canvas, node: TreeNode<String>): RectF {
         textPaint.textSize = nodeStyle.fontSize
         val h = nodePadding+nodeHeight
         val w = (canvas.width-nodeStyle.width)/2
@@ -152,37 +160,6 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
 data class PaintBranch(val branch: TreeBranch<String>, val styles: List<BranchStyle> = listOf()) {
     val width: Float = calcMaxWidth()
     val height: Float = calcMaxHeight()
-
-    //private val brPadding = style.nodeStyle.branchPadding
-    private var branchLeft = true
-
-    /*fun paint(canvas: Canvas, left: Boolean, width: Float, rect: RectF) {
-
-        val brStyle = styles[0].style
-        branchPainting.color = brStyle.color
-        textPaint.textSize = brStyle.fontSize
-
-        val brHeight = styles[j].valuesPadding
-        if (branchLeft) {
-            val r = rect.left - brPadding
-            rect.set(r, basePadding, r - brStyle.width, basePadding+brStyle.height)
-        } else {
-            val r = rect.right + brPadding
-            rect.set(r, basePadding, r + brStyle.width, basePadding+brStyle.height)
-        }
-
-        for (value in branch.values) {
-            canvas.drawRoundRect(rect, brStyle.rx, brStyle.ry, branchPainting)
-            canvas.drawCenterText(value, rect, textPaint)
-            rect.bottom += h
-            rect.top += h
-        }
-
-        //if (branch.hasChildren) branchLeft = !branchLeft
-    }
-
-    private fun childPaint(index: Int) {
-    }*/
 
     private fun calcMaxHeight(index: Int = 0, maxHeight: Float = 0F): Float {
         var branchHeight = 0F
