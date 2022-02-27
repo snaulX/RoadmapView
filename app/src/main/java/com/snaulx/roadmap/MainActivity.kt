@@ -13,17 +13,26 @@ class MainActivity : AppCompatActivity() {
                 branch("Kotlin")
                 branch("Java")
             }
-            node("Fundamentals")/* {
-                branch("Install Android Studio")
+            node("Fundamentals") {
+                branch("Install Android Studio") {
+                    branch("Visit site") {
+                        branch("A")
+                    }
+                    branch("B") {
+                        branch("C")
+                    }
+                }
                 branch("Learn Language") {
                     branch("Learn Basics of Language", "Learn OOP")
                 }
             }
-            node("Version Control Systems", "Repo Hosting Services")*/
+            node("Version Control Systems", "Repo Hosting Services")
         }.paintTree(30F, Color.BLACK,
             NodeStyle(10F, rectStyle, 20F),
             BranchStyle(10F, rectStyle, 30F),
-            BranchStyle(5F, rectStyle, 10F))
+            BranchStyle(5F, rectStyle, 10F),
+            BranchStyle(2F, rectStyle, 15F),
+        )
         //setContentView(R.layout.activity_main)
         setContentView(RoadmapView(this, roadmap))
     }
