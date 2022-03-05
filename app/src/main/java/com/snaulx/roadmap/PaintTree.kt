@@ -28,13 +28,17 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
     // !!! YOU CAN OPTIMISE IT !!!
     // You can calculate all in constructor and cache it
     // Like in PaintBranch class
-    fun paint(canvas: Canvas) {
+    fun paint(canvas: Canvas, offsetXY: PointF, scale: Float) {
+
         val paintLine = Paint() // it should be as private member of class
         paintLine.color = Color.rgb(250, 174, 53)
         paintLine.strokeWidth = 7F
-        val midX = (canvas.width/2).toFloat()
+
+        val w = canvas.width
+        val midX = (w/2).toFloat()
         val startPoint = PointF(midX, 0F)
         val endPoint = PointF(midX, lastHeight)
+
         for (node in tree.body) {
             val table = BranchTable(node, branchStyles)
 
@@ -49,6 +53,8 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
             val branches: List<PaintBranch> = table.exportPaintBranches(rect, style.textColor)
             for (br in branches) {
                 rect = maxCombineRect(rect, br.columnRect)
+                if (rect.left < 0F || rect.right > w)
+                    break
                 br.paint(canvas)
             }
             lastHeight = if (rect.bottom - lastHeight > basePadding) rect.bottom else lastHeight + brPadding
@@ -76,10 +82,10 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
     Create new rect from maximum width and height of both rects
      */
     private fun maxCombineRect(a: RectF, b: RectF): RectF {
-        val top: Float = if (a.top > b.top) a.top else b.top
+        val top: Float = if (a.top < b.top) a.top else b.top
         val bottom: Float = if (a.bottom > b.bottom) a.bottom else b.bottom
         val right: Float = if (a.right > b.right) a.right else b.right
-        val left: Float = if (a.left > b.left) a.left else b.left
+        val left: Float = if (a.left < b.left) a.left else b.left
         return RectF(left, top, right, bottom)
     }
 }

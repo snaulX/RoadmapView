@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import android.view.View
 
 /**
@@ -14,8 +15,8 @@ import android.view.View
 class RoadmapView(context: Context, private val roadmap: PaintTree) :
     View(context) {
 
-    private var contentWidth: Int = 0
-    private var contentHeight: Int = 0
+    private var offsetXY = PointF()
+    private var scale = 1F
 
     init {
         setWillNotDraw(false)
@@ -24,17 +25,6 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if (contentWidth == 0) {
-            contentWidth = width - paddingLeft - paddingRight
-            contentHeight = height - paddingTop - paddingBottom
-        }
-
-        roadmap.paint(canvas)
-    }
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        contentWidth = w - paddingLeft - paddingRight
-        contentHeight = h - paddingTop - paddingBottom
+        roadmap.paint(canvas, offsetXY, scale)
     }
 }
