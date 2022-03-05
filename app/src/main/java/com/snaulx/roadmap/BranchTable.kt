@@ -1,42 +1,55 @@
 package com.snaulx.roadmap
 
+import android.graphics.PointF
 import android.graphics.RectF
 import androidx.annotation.ColorInt
 
 class BranchTable(node: TreeNode<String>, private val styles: List<BranchStyle>) {
-    private val table: MutableList<MutableList<List<String>>> = mutableListOf()
+
+    private val leftTable: MutableList<MutableList<List<String>>> = mutableListOf()
+    private val rightTable: MutableList<MutableList<List<String>>> = mutableListOf()
 
     init {
+        var left = true
         for (branch in node.branches) {
-            parseBranch(branch)
+            parseBranch(branch, left)
+            left = !left
         }
     }
 
-    private fun parseBranch(branch: TreeBranch<String>, index: Int = 0) {
-        addBranchValues(branch.values, index)
+    private fun parseBranch(branch: TreeBranch<String>, left: Boolean, index: Int = 0) {
+        addBranchValues(branch.values, left, index)
         if (branch.hasChildren) {
             for (child in branch.children) {
-                parseBranch(child, index + 1)
+                parseBranch(child, left, index + 1)
             }
         }
     }
 
-    private fun addBranchValues(branch: List<String>, index: Int) {
+    private fun addBranchValues(values: List<String>, left: Boolean, index: Int) {
         try {
-            table[index].add(branch)
+            if (left) leftTable[index].add(values)
+            else rightTable[index].add(values)
         } catch (e: IndexOutOfBoundsException) {
-            table.add(index, mutableListOf())
-            addBranchValues(branch, index)
+            if (left) leftTable.add(index, mutableListOf())
+            else rightTable.add(index, mutableListOf())
+            addBranchValues(values, left, index)
         }
     }
 
     fun exportPaintBranches(nodeRect: RectF, @ColorInt textColor: Int): List<PaintBranch> {
         val branches = mutableListOf<PaintBranch>()
-        val offset: RectF = nodeRect
-        for (i in table.indices) {
-            val paintBranch = PaintBranch(styles[i], textColor, offset, table[i].toList())
+        val offset = PointF(nodeRect.left, nodeRect.top)
+        for (i in leftTable.indices) {
+            val paintBranch = PaintBranch(styles[i], textColor, offset, leftTable[i].toList(), left = true)
             branches.add(paintBranch)
-            offset leftOn paintBranch.columnRect.left + styles[i].childrenPadding
+            offset.x -= paintBranch.columnRect.left + styles[i].childrenPadding
+        }
+        offset.set(nodeRect.right, nodeRect.top)
+        for (i in rightTable.indices) {
+            val paintBranch = PaintBranch(styles[i], textColor, offset, rightTable[i].toList(), left = false)
+            branches.add(paintBranch)
+            offset.x += paintBranch.columnRect.right + styles[i].childrenPadding
         }
         return branches.toList()
     }

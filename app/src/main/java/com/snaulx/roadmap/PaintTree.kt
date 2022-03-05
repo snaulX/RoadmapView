@@ -15,6 +15,7 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
     private val branchStyles: List<BranchStyle> = style.branchStyles.toList()
 
     private val textPaint = Paint()
+    private val paintLine = Paint()
 
     private var lastHeight = basePadding
 
@@ -23,20 +24,18 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
         nodePaint.color = nodeStyle.color
         textPaint.textSize = nodeStyle.fontSize
         textPaint.color = style.textColor
+        paintLine.color = Color.rgb(250, 174, 53)
+        paintLine.strokeWidth = 7F
     }
 
     // !!! YOU CAN OPTIMISE IT !!!
     // You can calculate all in constructor and cache it
     // Like in PaintBranch class
     fun paint(canvas: Canvas, offsetXY: PointF, scale: Float) {
-
-        val paintLine = Paint() // it should be as private member of class
-        paintLine.color = Color.rgb(250, 174, 53)
-        paintLine.strokeWidth = 7F
-
         val w = canvas.width
-        val midX = (w/2).toFloat()
-        val startPoint = PointF(midX, 0F)
+        val midX: Float = (w + offsetXY.x) / 2
+        val startPoint = PointF(midX, offsetXY.y)
+        lastHeight += offsetXY.y
         val endPoint = PointF(midX, lastHeight)
 
         for (node in tree.body) {
@@ -51,10 +50,16 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
             rect.left -= brPadding
             rect.right += brPadding
             val branches: List<PaintBranch> = table.exportPaintBranches(rect, style.textColor)
+            var brLeft = false // left branches is out of canvas
+            var brRight = false // right branches is out of canvas
             for (br in branches) {
                 rect = maxCombineRect(rect, br.columnRect)
-                if (rect.left < 0F || rect.right > w)
-                    break
+                if (rect.left < 0F)
+                   brLeft = true
+                if (rect.right > w)
+                    brRight = true
+                if ((brLeft && br.left) or (brRight && !br.left))
+                    continue
                 br.paint(canvas)
             }
             lastHeight = if (rect.bottom - lastHeight > basePadding) rect.bottom else lastHeight + brPadding

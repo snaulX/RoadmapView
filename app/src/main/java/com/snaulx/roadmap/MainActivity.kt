@@ -7,7 +7,7 @@ import android.os.Bundle
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val rectStyle = RectStyle(Color.RED, 30F, 300F, 100F, 10F, 20F)
+        val rectStyle = RectStyle(Color.CYAN, 30F, 300F, 100F, 10F, 20F)
         val roadmap = tree<String> {
             node("Pick a language") {
                 branch("Kotlin")
@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
                 branch("Learn Language") {
                     branch("Learn Basics of Language", "Learn OOP")
                 }
+                branch("Left")
+                branch("Right")
             }
             node("Version Control Systems", "Repo Hosting Services")
         }.paintTree(30F, Color.BLACK,

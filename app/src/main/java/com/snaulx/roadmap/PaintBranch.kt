@@ -2,11 +2,12 @@ package com.snaulx.roadmap
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PointF
 import android.graphics.RectF
 import androidx.annotation.ColorInt
 
 data class PaintBranch(val style: BranchStyle, @ColorInt val textColor: Int,
-                       val offset: RectF, val branches: List<List<String>>) {
+                       val offset: PointF, val branches: List<List<String>>, val left: Boolean) {
     val columnRect: RectF
 
     private val paint = Paint()
@@ -27,9 +28,23 @@ data class PaintBranch(val style: BranchStyle, @ColorInt val textColor: Int,
 
         val valHeight: Float = rectStyle.height + style.valuesPadding
         val mutRects = mutableListOf<List<RectF>>()
-        val offsetLeft = offset.left
-        val offsetTop = offset.top
-        val rect = RectF(offsetLeft - rectStyle.width, offsetTop, offsetLeft, offsetTop + rectStyle.height)
+        val rect = if (left) {
+            val offsetTop = offset.y
+            val offsetLeft = offset.x
+            RectF(
+                offsetLeft - rectStyle.width,
+                offsetTop,
+                offsetLeft,
+                offsetTop + rectStyle.height
+            )
+        } else {
+            val offsetTop = offset.y
+            val offsetRight = offset.x
+            RectF(offsetRight,
+                offsetTop,
+                offsetRight + rectStyle.width,
+                offsetTop + rectStyle.height)
+        }
         columnRect = rect.clone()
         for (branch in branches) {
             val branchList = mutableListOf<RectF>()
