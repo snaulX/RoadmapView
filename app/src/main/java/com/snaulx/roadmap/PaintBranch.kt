@@ -6,13 +6,16 @@ import android.graphics.PointF
 import android.graphics.RectF
 import androidx.annotation.ColorInt
 
-data class PaintBranch(val style: BranchStyle, @ColorInt val textColor: Int,
-                       val offset: PointF, val branches: List<List<String>>, val left: Boolean) {
+internal class PaintBranch(style: BranchStyle, @ColorInt private val textColor: Int,
+                       offset: PointF, branches: List<TreeBranch<String>>, val left: Boolean) {
     val columnRect: RectF
+    val endPoints: List<Pair<PointF, Int>>
 
     private val paint = Paint()
     private val textPaint = Paint()
+
     private val rects: List<List<RectF>>
+    private val brValues: List<List<String>>
 
     private val rx: Float
     private val ry: Float
@@ -26,8 +29,11 @@ data class PaintBranch(val style: BranchStyle, @ColorInt val textColor: Int,
         rx = rectStyle.rx
         ry = rectStyle.ry
 
-        val valHeight: Float = rectStyle.height + style.valuesPadding
         val mutRects = mutableListOf<List<RectF>>()
+        val mutPoints = mutableListOf<Pair<PointF, Int>>()
+        val mutValues = mutableListOf<List<String>>()
+
+        val valHeight: Float = rectStyle.height + style.valuesPadding
         val rect = if (left) {
             val offsetTop = offset.y
             val offsetLeft = offset.x
@@ -45,23 +51,36 @@ data class PaintBranch(val style: BranchStyle, @ColorInt val textColor: Int,
                 offsetRight + rectStyle.width,
                 offsetTop + rectStyle.height)
         }
+        val endX = if (left) rect.left else rect.right
         columnRect = rect.clone()
         for (branch in branches) {
             val branchList = mutableListOf<RectF>()
-            for (i in branch.indices) {
+            val valuesList = mutableListOf<String>()
+            val top = rect.top
+
+            for (v in branch.values) {
                 branchList.add(rect.clone())
+                valuesList.add(v)
+
                 rect downOn valHeight
             }
+
+            mutValues.add(valuesList)
+            mutPoints.add(PointF(endX, (rect.bottom-top)/2) to branch.children.size)
             mutRects.add(branchList.toList())
+
             rect downOn style.childrenPadding - style.valuesPadding
         }
         columnRect.bottom = rect.bottom + (style.childrenPadding - style.valuesPadding)
+
+        brValues = mutValues.toList()
+        endPoints = mutPoints.toList()
         rects = mutRects.toList()
     }
 
     fun paint(canvas: Canvas) {
-        for (i in branches.indices) {
-            val values: List<String> = branches[i]
+        for (i in brValues.indices) {
+            val values: List<String> = brValues[i]
             val valRects: List<RectF> = rects[i]
             for (j in values.indices) {
                 val rect = valRects[j]

@@ -50,19 +50,19 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
             rect.left -= brPadding
             rect.right += brPadding
             val branches: List<PaintBranch> = table.exportPaintBranches(rect, style.textColor)
-            var brLeft = false // left branches is out of canvas
-            var brRight = false // right branches is out of canvas
             for (br in branches) {
                 rect = maxCombineRect(rect, br.columnRect)
-                if (rect.left < 0F)
-                   brLeft = true
-                if (rect.right > w)
-                    brRight = true
-                if ((brLeft && br.left) or (brRight && !br.left))
-                    continue
+                if ((rect.left < 0F && br.left) or
+                    (rect.right > w && !br.left))
+                   continue
                 br.paint(canvas)
             }
             lastHeight = if (rect.bottom - lastHeight > basePadding) rect.bottom else lastHeight + brPadding
+
+            val lines: List<PaintLine> = table.exportPaintLines(paintLine.color, paintLine.strokeWidth)
+            for (line in lines) {
+                line.paint(canvas)
+            }
         }
     }
 
