@@ -66,7 +66,7 @@ internal class PaintBranch(style: BranchStyle, @ColorInt private val textColor: 
             }
 
             mutValues.add(valuesList)
-            mutPoints.add(PointF(endX, (rect.bottom-top)/2) to branch.children.size)
+            mutPoints.add(PointF(endX, top+(rect.top-top)/2) to branch.children.size)
             mutRects.add(branchList.toList())
 
             rect downOn style.childrenPadding - style.valuesPadding
