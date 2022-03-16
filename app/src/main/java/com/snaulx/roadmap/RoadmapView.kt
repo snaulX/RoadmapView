@@ -2,10 +2,14 @@ package com.snaulx.roadmap
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.gesture.Gesture
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
+import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 
 /**
@@ -18,6 +22,25 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
     private var offsetXY = PointF()
     private var scale = 1F
 
+    private val scrollListener = object : GestureDetector.SimpleOnGestureListener() {
+        override fun onDown(e: MotionEvent?): Boolean {
+            return true
+        }
+
+        override fun onScroll(
+            e1: MotionEvent?,
+            e2: MotionEvent?,
+            distanceX: Float,
+            distanceY: Float
+        ): Boolean {
+            offsetXY.x -= distanceX
+            offsetXY.y -= distanceY
+            invalidate() // redraw to apply changes
+            return true
+        }
+    }
+    private val scrollDetector = GestureDetector(context, scrollListener)
+
     init {
         setWillNotDraw(false)
     }
@@ -26,5 +49,10 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
         super.onDraw(canvas)
 
         roadmap.paint(canvas, offsetXY, scale)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return scrollDetector.onTouchEvent(event)
     }
 }
