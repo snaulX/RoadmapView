@@ -29,7 +29,9 @@ class MainActivity : AppCompatActivity() {
                 branch("Right")
             }
             node("Version Control Systems", "Repo Hosting Services")
-        }.paintTree(30F, Color.BLACK,
+        }.paintTree(padding = 30F,
+            lineColor = Color.rgb(255, 159, 43), lineWidth = 4F,
+            textColor = Color.BLACK,
             NodeStyle(10F, rectStyle, 20F),
             BranchStyle(10F, rectStyle, 30F),
             BranchStyle(5F, rectStyle, 10F),
