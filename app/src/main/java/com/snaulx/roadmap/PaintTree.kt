@@ -24,7 +24,7 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
         isNodesGenerated = true
     }
 
-    fun paint(canvas: Canvas, offsetXY: PointF, scale: Float) {
+    fun paint(canvas: Canvas) {
         if (!isNodesGenerated) generateNodes(canvas.width)
 
         for (node in paintNodes) {

@@ -48,7 +48,7 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        roadmap.paint(canvas, offsetXY, scale)
+        roadmap.paint(canvas)
     }
 
     @SuppressLint("ClickableViewAccessibility")

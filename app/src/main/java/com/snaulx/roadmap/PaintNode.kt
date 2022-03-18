@@ -2,11 +2,13 @@ package com.snaulx.roadmap
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PointF
 import android.graphics.RectF
 import androidx.annotation.ColorInt
 
 internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style: NodeStyle, startHeight: Float,
-                         canvasWidth: Int, branchStyles: List<BranchStyle>, @ColorInt lineColor: Int, lineWidth: Float) {
+                         canvasWidth: Int, branchStyles: List<BranchStyle>,
+                         @ColorInt private val lineColor: Int, private val lineWidth: Float) {
 
     val nodeRect: RectF
     val rect: RectF
@@ -18,6 +20,7 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
 
     private val paintBranches: List<PaintBranch>
     private val paintLines: List<PaintLine>
+    private val nodeLines: List<Pair<PointF, PointF>>
 
     private var drawableBranches = listOf<PaintBranch>()
 
@@ -32,14 +35,15 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
 
         val w = (canvasWidth-rectStyle.width)/2
         val h = rectStyle.height
+        val nodePadding: Float = style.nodePadding
         val mutRect = RectF(w, startHeight, w+rectStyle.width, startHeight+h)
         val mutRects = mutableListOf<RectF>()
 
         for (value in node.values) {
             mutRects.add(mutRect.clone())
-            mutRect downOn h+style.nodePadding
+            mutRect downOn h+nodePadding
         }
-        nodeRect = RectF(mutRect.left, startHeight, mutRect.right, mutRect.bottom)
+        nodeRect = RectF(mutRect.left, startHeight, mutRect.right, mutRect.top-nodePadding)
         rect = nodeRect.clone()
         valuesRects = mutRects.toList()
 
@@ -48,6 +52,40 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
         baseRect.left -= style.branchPadding
         baseRect.right += style.branchPadding
         paintBranches = table.exportPaintBranches(baseRect, textColor)
+
+        val leftPoint = PointF(nodeRect.left, nodeRect.centerY())
+        val rightPoint = PointF(nodeRect.right, nodeRect.centerY())
+        val mutLines = mutableListOf<Pair<PointF, PointF>>()
+        var firstLeft = false
+        var firstRight = false
+        for (column in paintBranches) {
+            // shitty code but it's working
+            // trying to find first left and right columns to make lines to them
+            val left = if (!firstLeft && column.left) {
+                firstLeft = true
+                true
+            } else if (!firstRight && !column.left) {
+                firstRight = true
+                false
+            } else if (firstLeft && firstRight) {
+                break
+            } else {
+                continue
+            }
+            val columnWidth = column.columnRect.width()
+            for (endPair in column.endPoints) {
+                val endPoint: PointF = endPair.first.clone()
+                if (left) {
+                    endPoint.x += columnWidth
+                    mutLines.add(leftPoint to endPoint)
+                } else {
+                    endPoint.x -= columnWidth
+                    mutLines.add(rightPoint to endPoint)
+                }
+            }
+        }
+        nodeLines = mutLines.toList()
+
         calculateDrawableBranches(canvasWidth)
         paintLines = table.exportPaintLines(lineColor, lineWidth)
     }
@@ -81,6 +119,9 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
             val valueRect: RectF = valuesRects[i]
             canvas.drawRoundRect(valueRect, rectStyle.rx, rectStyle.ry, nodePaint)
             canvas.drawCenterText(values[i], valueRect, textPaint)
+        }
+        for (line in nodeLines) {
+            canvas.drawBezier(line.first, line.second, lineColor, lineWidth)
         }
         for (br in drawableBranches) {
             br.paint(canvas)

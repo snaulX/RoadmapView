@@ -10,17 +10,8 @@ fun Canvas.drawCenterText(value: String, rect: RectF, textPaint: Paint) {
         rect.centerY() + textBounds.height()/2, textPaint)
 }
 
-fun Canvas.drawBezier(start: PointF, end: PointF, @ColorInt color: Int, width: Float) {
-    // https://stackoverflow.com/questions/30073682/how-to-draw-bezier-curve-in-android
-    val pLine: Paint = object : Paint() {
-        init {
-            style = Style.STROKE
-            isAntiAlias = true
-            strokeWidth = width
-            this.color = color
-        }
-    }
-
+// https://stackoverflow.com/questions/30073682/how-to-draw-bezier-curve-in-android
+fun Canvas.drawBezier(start: PointF, end: PointF, paint: Paint) {
     val p = Path()
     val mid = PointF()
     mid.set((start.x + end.x) / 2, (start.y + end.y) / 2)
@@ -31,5 +22,18 @@ fun Canvas.drawBezier(start: PointF, end: PointF, @ColorInt color: Int, width: F
     p.quadTo((start.x + mid.x) / 2, start.y, mid.x, mid.y)
     p.quadTo((mid.x + end.x) / 2, end.y, end.x, end.y)
 
-    drawPath(p, pLine)
+    drawPath(p, paint)
+}
+
+fun Canvas.drawBezier(start: PointF, end: PointF, @ColorInt color: Int, width: Float) {
+    val pLine: Paint = object : Paint() {
+        init {
+            style = Style.STROKE
+            isAntiAlias = true
+            strokeWidth = width
+            this.color = color
+        }
+    }
+
+    drawBezier(start, end, pLine)
 }
