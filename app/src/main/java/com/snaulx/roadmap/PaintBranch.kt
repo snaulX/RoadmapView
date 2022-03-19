@@ -78,6 +78,17 @@ internal class PaintBranch(style: BranchStyle, @ColorInt private val textColor: 
         rects = mutRects.toList()
     }
 
+    fun move(dirX: Float, dirY: Float) {
+        columnRect leftOn dirX
+        columnRect upOn dirY
+        for (valRects in rects) {
+            for (valRect in valRects) {
+                valRect leftOn dirX
+                valRect upOn dirY
+            }
+        }
+    }
+
     fun paint(canvas: Canvas) {
         for (i in brValues.indices) {
             val values: List<String> = brValues[i]

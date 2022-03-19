@@ -19,9 +19,6 @@ import android.view.View
 class RoadmapView(context: Context, private val roadmap: PaintTree) :
     View(context) {
 
-    private var offsetXY = PointF()
-    private var scale = 1F
-
     private val scrollListener = object : GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent?): Boolean {
             return true
@@ -33,8 +30,7 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
             distanceX: Float,
             distanceY: Float
         ): Boolean {
-            offsetXY.x -= distanceX
-            offsetXY.y -= distanceY
+            roadmap.move(distanceX, distanceY)
             invalidate() // redraw to apply changes
             return true
         }

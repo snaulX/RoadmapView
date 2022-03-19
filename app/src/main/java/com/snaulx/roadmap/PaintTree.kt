@@ -24,6 +24,12 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
         isNodesGenerated = true
     }
 
+    fun move(dirX: Float, dirY: Float) {
+        for (node in paintNodes) {
+            node.move(dirX, dirY)
+        }
+    }
+
     fun paint(canvas: Canvas) {
         if (!isNodesGenerated) generateNodes(canvas.width)
 

@@ -25,15 +25,10 @@ fun Canvas.drawBezier(start: PointF, end: PointF, paint: Paint) {
     drawPath(p, paint)
 }
 
-fun Canvas.drawBezier(start: PointF, end: PointF, @ColorInt color: Int, width: Float) {
-    val pLine: Paint = object : Paint() {
-        init {
-            style = Style.STROKE
-            isAntiAlias = true
-            strokeWidth = width
-            this.color = color
-        }
-    }
-
-    drawBezier(start, end, pLine)
-}
+fun Canvas.drawBezier(start: PointF, end: PointF, @ColorInt color: Int, width: Float) =
+    drawBezier(start, end, Paint().apply {
+        style = Paint.Style.STROKE
+        isAntiAlias = true
+        strokeWidth = width
+        this.color = color
+    })
