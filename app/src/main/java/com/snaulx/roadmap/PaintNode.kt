@@ -128,25 +128,18 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
     }
 
     fun move(dirX: Float, dirY: Float) {
-        rect leftOn dirX
-        rect upOn dirY
-        nodeRect leftOn dirX
-        nodeRect upOn dirY
+        rect.moveOn(dirX, dirY)
+        nodeRect.moveOn(dirX, dirY)
         for (value in valuesRects) {
-            value leftOn dirX
-            value upOn dirY
+            value.moveOn(dirX, dirY)
         }
-        leftPoint leftOn dirX
-        leftPoint upOn dirY
-        rightPoint leftOn dirX
-        rightPoint upOn dirY
+        leftPoint.moveOn(dirX, dirY)
+        rightPoint.moveOn(dirX, dirY)
         for (brPoint in leftPoints) {
-            brPoint leftOn dirX
-            brPoint upOn dirY
+            brPoint.moveOn(dirX, dirY)
         }
         for (brPoint in rightPoints) {
-            brPoint leftOn dirX
-            brPoint upOn dirY
+            brPoint.moveOn(dirX, dirY)
         }
         for (br in paintBranches) {
             br.move(dirX, dirY)
@@ -159,7 +152,7 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
 
     fun paint(canvas: Canvas) {
         if (isMoved) {
-            //calculateDrawableBranches(canvas.width)
+            calculateDrawableBranches(canvas.width)
             isMoved = false
         }
         for (i in values.indices) {

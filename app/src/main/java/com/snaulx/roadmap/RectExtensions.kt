@@ -20,3 +20,7 @@ infix fun RectF.rightOn(value: Float) {
     left += value
     right += value
 }
+fun RectF.moveOn(x: Float, y: Float) {
+    leftOn(x)
+    upOn(y)
+}

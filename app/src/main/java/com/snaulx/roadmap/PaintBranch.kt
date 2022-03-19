@@ -79,12 +79,10 @@ internal class PaintBranch(style: BranchStyle, @ColorInt private val textColor: 
     }
 
     fun move(dirX: Float, dirY: Float) {
-        columnRect leftOn dirX
-        columnRect upOn dirY
+        columnRect.moveOn(dirX, dirY)
         for (valRects in rects) {
             for (valRect in valRects) {
-                valRect leftOn dirX
-                valRect upOn dirY
+                valRect.moveOn(dirX, dirY)
             }
         }
     }

@@ -43,10 +43,8 @@ data class PaintTree(val tree: Tree<String>, val style: TreeStyle) {
 
     fun move(dirX: Float, dirY: Float) {
         for (line in lines) {
-            line.first leftOn dirX
-            line.first upOn dirY
-            line.second leftOn dirX
-            line.second upOn dirY
+            line.first.moveOn(dirX, dirY)
+            line.second.moveOn(dirX, dirY)
         }
         for (node in paintNodes) {
             node.move(dirX, dirY)

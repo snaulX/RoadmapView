@@ -10,3 +10,7 @@ infix fun PointF.upOn(y: Float) {
 infix fun PointF.leftOn(x: Float) {
     this.x -= x
 }
+fun PointF.moveOn(x: Float, y: Float) {
+    this.x -= x
+    this.y -= y
+}

@@ -46,8 +46,7 @@ internal class PaintLine(startColumn: PaintBranch, endColumn: PaintBranch,
 
     fun move(dirX: Float, dirY: Float) {
         for (point in points) {
-            point leftOn dirX
-            point upOn dirY
+            point.moveOn(dirX, dirY)
         }
     }
 
