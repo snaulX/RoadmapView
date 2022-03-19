@@ -10,6 +10,8 @@ fun Canvas.drawCenterText(value: String, rect: RectF, textPaint: Paint) {
         rect.centerY() + textBounds.height()/2, textPaint)
 }
 
+fun Canvas.drawLine(start: PointF, end: PointF, paint: Paint) = drawLine(start.x, start.y, end.x, end.y, paint)
+
 // https://stackoverflow.com/questions/30073682/how-to-draw-bezier-curve-in-android
 fun Canvas.drawBezier(start: PointF, end: PointF, paint: Paint) {
     val p = Path()
