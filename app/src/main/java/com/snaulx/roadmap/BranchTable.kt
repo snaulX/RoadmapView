@@ -51,7 +51,7 @@ internal class BranchTable(node: TreeNode<String>, private val styles: List<Bran
             }
             prevBranch = paintBranch
             branches.add(paintBranch)
-            offset.x -= paintBranch.columnRect.left + styles[i].childrenPadding
+            offset.x = paintBranch.columnRect.left - styles[i].childrenPadding
         }
         prevBranch = null
         offset.set(nodeRect.right, nodeRect.top)
@@ -62,7 +62,7 @@ internal class BranchTable(node: TreeNode<String>, private val styles: List<Bran
             }
             prevBranch = paintBranch
             branches.add(paintBranch)
-            offset.x += paintBranch.columnRect.right + styles[i].childrenPadding
+            offset.x = paintBranch.columnRect.right + styles[i].childrenPadding
         }
         return branches.toList()
     }

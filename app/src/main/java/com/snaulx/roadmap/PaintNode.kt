@@ -19,7 +19,6 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
     private val rectStyle: RectStyle = style.style
 
     private val paintBranches: List<PaintBranch>
-    private var drawableBranches = listOf<PaintBranch>()
     private val paintLines: List<PaintLine>
 
     private val leftPoint: PointF
@@ -31,53 +30,65 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
     private val textPaint = Paint()
     private val linePaint = Paint()
 
-    private var isMoved = false
-
     init {
+        // Setup paints
         nodePaint.style = Paint.Style.FILL
         nodePaint.color = rectStyle.color
         textPaint.textSize = rectStyle.fontSize
         textPaint.color = textColor
+        linePaint.strokeWidth = lineWidth
+        linePaint.isAntiAlias = true
+        linePaint.style = Paint.Style.STROKE
+        linePaint.color = lineColor
 
+        // Init local helper variables
         val w = (canvasWidth-rectStyle.width)/2
         val h = rectStyle.height
         val nodePadding: Float = style.nodePadding
         val mutRect = RectF(w, startHeight, w+rectStyle.width, startHeight+h)
         val mutRects = mutableListOf<RectF>()
 
+        // Generate 'valuesrects' and 'nodeRect'
         for (value in node.values) {
             mutRects.add(mutRect.clone())
             mutRect downOn h+nodePadding
         }
         nodeRect = RectF(mutRect.left, startHeight, mutRect.right, mutRect.top-nodePadding)
-        rect = nodeRect.clone()
         valuesRects = mutRects.toList()
 
+        // Generate BranchTable and 'paintBranches'
         val table = BranchTable(node, branchStyles)
         val baseRect = nodeRect.clone()
         baseRect.left -= style.branchPadding
         baseRect.right += style.branchPadding
         paintBranches = table.exportPaintBranches(baseRect, textColor)
 
+        // Calculate 'rect'
+        rect = nodeRect.clone()
+        for (br in paintBranches) {
+            rect.set(maxCombineRect(rect, br.columnRect))
+        }
+
+        // Generate lines from nodes to branches
         leftPoint = PointF(nodeRect.left, nodeRect.centerY())
         rightPoint = PointF(nodeRect.right, nodeRect.centerY())
         val mutLeftPoints = mutableListOf<PointF>()
         val mutRightPoints = mutableListOf<PointF>()
-        var firstLeft = false
-        var firstRight = false
+        var firstLeft = false // flag means that we passed first left column
+        var firstRight = false // flag means that we passed first right column
         for (column in paintBranches) {
             // shitty code but it's working
             // trying to find first left and right columns to make lines to them
             val left = if (!firstLeft && column.left) {
-                firstLeft = true
+                firstLeft = true // found first left column
                 true
             } else if (!firstRight && !column.left) {
-                firstRight = true
+                firstRight = true // found first right column
                 false
             } else if (firstLeft && firstRight) {
-                break
+                break // we found all points that we need
             } else {
-                continue
+                continue // continue finding first columns
             }
             val columnWidth = column.columnRect.width()
             for (endPair in column.endPoints) {
@@ -94,26 +105,8 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
         leftPoints = mutLeftPoints.toList()
         rightPoints = mutRightPoints.toList()
 
-        calculateDrawableBranches(canvasWidth)
+        // Generate 'paintLines'
         paintLines = table.exportPaintLines(lineColor, lineWidth)
-
-        linePaint.strokeWidth = lineWidth
-        linePaint.isAntiAlias = true
-        linePaint.style = Paint.Style.STROKE
-        linePaint.color = lineColor
-    }
-
-    private fun calculateDrawableBranches(canvasWidth: Int) {
-        val mutBranches = mutableListOf<PaintBranch>()
-        for (br in paintBranches) {
-            rect.set(maxCombineRect(rect, br.columnRect))
-            if (!
-                ((rect.left < 0F && br.left) or
-                (rect.right > canvasWidth && !br.left))
-            )
-                mutBranches.add(br)
-        }
-        drawableBranches = mutBranches.toList()
     }
 
     /*
@@ -147,14 +140,9 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
         for (line in paintLines) {
             line.move(dirX, dirY)
         }
-        isMoved = true
     }
 
     fun paint(canvas: Canvas) {
-        if (isMoved) {
-            calculateDrawableBranches(canvas.width)
-            isMoved = false
-        }
         for (i in values.indices) {
             val valueRect: RectF = valuesRects[i]
             canvas.drawRoundRect(valueRect, rectStyle.rx, rectStyle.ry, nodePaint)
@@ -166,7 +154,7 @@ internal class PaintNode(node: TreeNode<String>, @ColorInt textColor: Int, style
         for (brPoint in rightPoints) {
             canvas.drawBezier(rightPoint, brPoint, linePaint)
         }
-        for (br in drawableBranches) {
+        for (br in paintBranches) {
             br.paint(canvas)
         }
         for (line in paintLines) {
