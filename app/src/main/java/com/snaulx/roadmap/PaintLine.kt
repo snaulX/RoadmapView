@@ -5,21 +5,20 @@ import android.graphics.Paint
 import android.graphics.PointF
 import androidx.annotation.ColorInt
 
-internal class PaintLine(startColumn: PaintBranch, endColumn: PaintBranch,
-                              @ColorInt color: Int, width: Float) {
+internal class PaintLine(startColumn: PaintBranch, endColumn: PaintBranch, private val paint: Paint) {
     private val lines: List<Pair<PointF, PointF>>
-    private val linePaint = Paint()
     private val points: List<PointF>
 
     init {
         val mutLines = mutableListOf<Pair<PointF, PointF>>()
         val mutPoints = mutableListOf<PointF>()
+
         val left = endColumn.left
         val endPoints = mutableListOf<PointF>()
-        val w = endColumn.columnRect.width()
+        val endPointX = if (left) endColumn.columnRect.right else endColumn.columnRect.left
         for (endPair in endColumn.endPoints) {
-            val endPoint: PointF = endPair.first
-            endPoint.x += if (left) -w else w
+            val endPoint: PointF = endPair.first.clone()
+            endPoint.x = endPointX
             endPoints.add(endPoint)
             mutPoints.add(endPoint)
         }
@@ -37,11 +36,6 @@ internal class PaintLine(startColumn: PaintBranch, endColumn: PaintBranch,
 
         lines = mutLines.toList()
         points = mutPoints.toList()
-
-        linePaint.strokeWidth = width
-        linePaint.isAntiAlias = true
-        linePaint.style = Paint.Style.STROKE
-        linePaint.color = color
     }
 
     fun move(dirX: Float, dirY: Float) {
@@ -52,7 +46,7 @@ internal class PaintLine(startColumn: PaintBranch, endColumn: PaintBranch,
 
     fun paint(canvas: Canvas) {
         for (line in lines) {
-            canvas.drawBezier(line.first, line.second, linePaint)
+            canvas.drawBezier(line.first, line.second, paint)
         }
     }
 }

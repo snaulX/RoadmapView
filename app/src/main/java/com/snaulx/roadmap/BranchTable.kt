@@ -1,5 +1,6 @@
 package com.snaulx.roadmap
 
+import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.RectF
 import androidx.annotation.ColorInt
@@ -70,8 +71,14 @@ internal class BranchTable(node: TreeNode<String>, private val styles: List<Bran
     // exportPaintBranches *must be called before* this call
     fun exportPaintLines(@ColorInt lineColor: Int, lineWidth: Float): List<PaintLine> {
         val mutLines = mutableListOf<PaintLine>()
+        val paint = Paint().apply {
+            strokeWidth = lineWidth
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            color = lineColor
+        }
         for (line in paintLines) {
-            mutLines.add(PaintLine(line.first, line.second, lineColor, lineWidth))
+            mutLines.add(PaintLine(line.first, line.second, paint))
         }
         return mutLines.toList()
     }
