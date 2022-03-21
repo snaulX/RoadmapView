@@ -10,13 +10,15 @@ import android.graphics.PointF
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.view.View
 
 /**
  * View for showing Roadmap
  */
 @SuppressLint("ViewConstructor")
-class RoadmapView(context: Context, private val roadmap: PaintTree) :
+class RoadmapView(context: Context, private val roadmap: PaintTree,
+                  private val minScale: Float = 0.1F, private val maxScale: Float = 5F) :
     View(context) {
 
     private val scrollListener = object : GestureDetector.SimpleOnGestureListener() {
@@ -37,6 +39,20 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
     }
     private val scrollDetector = GestureDetector(context, scrollListener)
 
+    private var scaleFactor = 1F
+    private val scaleListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
+            scaleFactor *= detector.scaleFactor
+            // don't let the roadmap get too small or too large
+            scaleFactor = Math.max(minScale, Math.min(scaleFactor, maxScale))
+
+            invalidate() // redraw to apply changes
+            return true
+        }
+    }
+    private val scaleDetector = ScaleGestureDetector(context, scaleListener)
+
     init {
         setWillNotDraw(false)
     }
@@ -44,11 +60,18 @@ class RoadmapView(context: Context, private val roadmap: PaintTree) :
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        roadmap.paint(canvas)
+        canvas.apply {
+            save()
+            scale(scaleFactor, scaleFactor)
+            roadmap.paint(canvas)
+            restore()
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        return scrollDetector.onTouchEvent(event)
+        scrollDetector.onTouchEvent(event)
+        scaleDetector.onTouchEvent(event)
+        return true
     }
 }
